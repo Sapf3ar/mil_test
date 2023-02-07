@@ -44,3 +44,21 @@ Per category level: 0.644 0.752 0.656 0.926 0.614 0.608
  
  
  * (5) up_leg : 0.608
+
+
+
+### Ideas
+------------------------------------------------
+##### Fine-tuning by hierarchy level
+
+
+   Depends on what level metrics are most important, it is possible that fine-tuning model on part of a dataset (approx. 50%+) for body semantic
+   
+   segmentation, then fine-tuning on a bigger subset, but for upper and lower body parts mask. And only after that, fine-tune on all categories on all samples.
+   
+   
+##### Data
+
+
+   Filter samples with small mask area (relatively to the original image shape).
+   Fine-tune (or train) model on other body parts dataset
