@@ -8,6 +8,27 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
+import evaluate
+from mask_utils import get_body_mask, upper_body_mask, lower_body_mask
+
+def category_metric(preds):
+    metric_body =  evaluate.load("mean_iou")
+    metric_upper_body =  evaluate.load("mean_iou")
+    metric_lower_body =  evaluate.load("mean_iou")
+    metric_category =  evaluate.load("mean_iou")
+    for i in range(len(preds)):
+        gt = list(preds[i]['gt'])
+        output = preds[i]['preds']
+        metric_body.add_batch(references=[get_body_mask(i) for i in gt], predictions=[get_body_mask(i.numpy()) for i in output])
+        metric_upper_body.add_batch(references=[upper_body_mask(i) for i in gt], predictions=[upper_body_mask(i.numpy()) for i in output])
+        metric_lower_body.add_batch(references=[lower_body_mask(i) for i in gt], predictions=[lower_body_mask(i.numpy()) for i in output])
+        metric_category.add_batch(references=gt, predictions=output)
+
+
+    print(metric_body.compute(num_labels=2, ignore_index = 0)['mean_iou'])
+    print(metric_upper_body.compute(num_labels=2, ignore_index = 0)['mean_iou'])
+    print(metric_lower_body.compute(num_labels=2, ignore_index = 0)['mean_iou'])
+    print(metric_category.compute(num_labels=len(Config.id2label), ignore_index = 0)['per_category_iou'])
 
 
 def get_parser():
@@ -28,9 +49,10 @@ def get_parser():
     args = parser.parse_args()
     return args
 
-def train(args):
+def validate(args):
     
     model = SegModel(Config)    
+    
     #get data for training
     val_dataloader = None
     if 'validation_ids' in dir(Config):
@@ -52,10 +74,11 @@ def train(args):
                         check_val_every_n_epoch=2,
                         )
     
-    trainer.fit(model, ckpt_path=args.weights_path, train_dataloaders=train_dataloader, val_dataloaders = val_dataloader)
-
+    preds = trainer.predict(model, val_dataloader, ckpt_path=args.weights_path)
+    
 
 if __name__ == '__main__':
     wandb.login()
     args = get_parser()
-    train(args)
+    preds = validate(args)
+    category_metric(preds=preds)

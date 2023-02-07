@@ -47,7 +47,7 @@ def train(args):
     if args.log:
         wandb_logger = WandbLogger(project=Config.wandb_project)
         callbacks.append(wandb_logger)
-
+    
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
     checkpoint_callback = ModelCheckpoint(dirpath=args.root_dir)
     model = SegModel()

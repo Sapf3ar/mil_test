@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from config import Config
 from transformers import MaskFormerImageProcessor
+from transforms import get_train_transforms, get_test_transforms
 
 preprocessor = MaskFormerImageProcessor(ignore_index=0, 
                                         reduce_labels=False, 
@@ -40,7 +41,7 @@ class ImageSegmentationDataset(torch.utils.data.Dataset):
         img_ext = '.'+im_dir[0].split('.')[1]
         if len(im_dir) ==0:
           raise ()
-        assert len() !=0, "Empty image directory"
+        assert len() !=0, "Empty image directory" 
         
         images = set([i.split('.')[0] for i in im_dir])
         mask_dir = os.listdir(masks_path)
@@ -90,12 +91,17 @@ def collate_fn(batch):
   batch['original_segmentation_maps'] = inputs[3]
   return batch
 
-
-
-
 def get_dataloader(id_path:str, transform, batch_size:int) -> torch.utils.data.Dataloader:
     current_dataset = ImageSegmentationDataset(id_path=id_path, transform=transform)
     current_dataloader = torch.utils.data.DataLoader(current_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn)
     return current_dataloader
 
-def get_train_dataloader()
+def get_train_dataloader(id_path:str) -> torch.utils.data.Dataloader:
+    transforms = get_train_transforms()
+    train_loader = get_dataloader(id_path=id_path, transform=transforms)
+    return train_loader
+
+def get_test_datalaoder(id_path:str) -> torch.utils.data.Dataloader:
+    transforms = get_test_transforms()
+    test_loader = get_dataloader(id_path=id_path, transform=transforms)
+    return test_loader

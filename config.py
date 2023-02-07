@@ -16,13 +16,13 @@ class Config:
 
     trains_ids:str = 'train_id.txt'
     validation_ids:str = 'val_id.txt'
-    
+
     ADE_MEAN = np.array([123.675, 116.280, 103.530]) / 255
     ADE_STD = np.array([58.395, 57.120, 57.375]) / 255
 
     train_batch_size=12
     validation_batch_size=8
-
+    wandb_project:str = 'mil_test'
     lr:float = 5e-5
     warmup_steps:int = 200
     max_epochs:int = 20
